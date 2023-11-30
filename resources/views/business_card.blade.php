@@ -1,0 +1,1 @@
+<html><head><title>Virtual Business Card</title></head><body><div><img src="{{ $qrCode }}" /></div><div><h2>{{ $attendee->first_name }} {{ $attendee->last_name }}</h2><p>{{ $attendee->job_title }}</p><p>{{ $attendee->company_name }}</p><p>Contact: {{ $attendee->phone_number }}</p><p>Company: {{ $attendee->company }}</p><p>Email: {{ $attendee->email }}</p></div></body></html>
