@@ -30,6 +30,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
+use App\Models\Event;
+use App\Models\UnassignedData;
 use Maatwebsite\Excel\Concerns\ToArray;
 use Illuminate\Support\Facades\Validator;
 
@@ -42,6 +44,118 @@ class AuthController extends Controller
     {
         $this->emailService = $emailService;
         $this->smsService = $smsService;
+    }
+
+    //Mobile App
+    public function get_industries()
+    {
+        $industries = Industry::all();
+
+        if ($industries) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'All Industries',
+                'data' => $industries
+            ]);
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Data not Found'
+            ]);
+        }
+    }
+
+    public function get_job_titles()
+    {
+        $JobTitleData = JobTitle::all();
+
+        if ($JobTitleData) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'All Job Titles',
+                'data' => $JobTitleData
+            ]);
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Data not Found'
+            ]);
+        }
+    }
+
+    public function get_companies()
+    {
+        $CompanyData = Company::all();
+
+        if ($CompanyData) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'All Companies',
+                'data' => $CompanyData
+            ]);
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Data not Found'
+            ]);
+        }
+    }
+    public function others_unasssigned_data(Request $request)
+    {
+        $user_id = $request->input('user_id');
+        $other_id = $request->input('other_id');
+        $type = $request->input('type');
+        $value = $request->input('value');
+
+        if (isset($type) && !empty($type) && !empty($other_id)) {
+
+            $data = new UnassignedData();
+
+            //$city->uuid = Uuid::uuid4()->toString();
+            $data->user_id = !empty($request->user_id) ? $request->user_id : "0";
+            $data->other_id = $request->other_id;
+            $data->type = $request->type;
+            $data->value = !empty($request->value) ? $request->value : "";
+            $success = $data->save();
+
+            if ($success) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Data Saved Successfully.'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'Something Went Wrong.Please try again later.'
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Incorrect Data'
+            ]);
+        }
+    }
+
+    //City wise Event 
+    public function city_wise_event(Request $request)
+    {
+        $city_id = $request->input('city_id');
+
+        $allEvents = Event::where('city', $city_id)->get();
+
+        if ($allEvents) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'All City Wise Event',
+                'data' => $allEvents
+            ]);
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Data not Found'
+            ]);
+        }
     }
 
     //Mapping of Industries
@@ -955,13 +1069,11 @@ class AuthController extends Controller
                 'status' => 200,
                 'message' => 'Unsubscribed Successfully'
             ]);
-        }
-        else
-        {
+        } else {
             return response()->json([
                 'status' => 422,
                 'message' => 'Email Not found.'
-            ]); 
+            ]);
         }
     }
 

@@ -36,8 +36,6 @@ class EventController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-
-
     public function index()
     {
         $userId = Auth::id();
@@ -85,13 +83,35 @@ class EventController extends Controller
 
     public function all_events()
     {
-        $events = Event::all();
+        $events = Event::where('status', '==', 1)->get()->toArray();
+
+        $event_data = [];
+
+        foreach ($events as $event) {
+
+            $total_attendee = Attendee::where('event_id', $event['id'])->count();
+
+            $total_accepted = Attendee::where('event_id', $event['id'])->where('profile_completed', 1)->count();
+
+            $total_not_accepted = Attendee::where('event_id', $event['id'])->where('profile_completed', 0)->count();
+
+            $total_rejected = Attendee::where('event_id', $event['id'])->where('profile_completed', 2)->count();
+
+            $event_data1 = array(
+                'total_attendee' => $total_attendee,
+                'total_accepted' => $total_accepted,
+                'total_not_accepted' => $total_not_accepted,
+                'total_rejected' => $total_rejected
+            );
+
+            $event_data[] = array_merge($event, $event_data1);
+        }
 
         if ($events) {
             return response()->json([
                 'status' => 200,
                 'message' => 'All Events',
-                'data' => $events
+                'data' => $event_data
             ]);
         } else {
             return response()->json([
@@ -187,10 +207,10 @@ class EventController extends Controller
                 }
 
                 $userID = Event::where('id', $request->event_id)->first()->user_id;
-           
-                
+
+
                 $attendee = new Attendee();
-                
+
                 $attendee->uuid = Uuid::uuid4()->toString();
                 $attendee->user_id = $userID;
                 $attendee->event_id = $event_id;
@@ -213,7 +233,7 @@ class EventController extends Controller
 
                 $success = $attendee->save();
 
-                if ( $success) {
+                if ($success) {
                     return response()->json([
                         'status' => 200,
                         'message' => 'Event Invitation Requested Successfully.',
@@ -296,9 +316,6 @@ class EventController extends Controller
             ]);
         }
     }
-
-
-
 
     //Add 0 in single Digit
     public function prepandZerorIfSingleDigit($number)
@@ -391,6 +408,9 @@ class EventController extends Controller
         $event->country =  strip_tags($request->country);
         $event->pincode = $request->pincode;
         $event->feedback = $request->feedback;
+        $event->why_attend_info = $request->why_attend_info;
+        $event->more_information = $request->more_information;
+        $event->t_and_conditions = $request->t_and_conditions;
         $event->status = $request->status;
 
         $success = $event->save();
@@ -398,12 +418,12 @@ class EventController extends Controller
         if ($success) {
 
             // Generate QR code for the event
-            $eventUrl = route('events.show', ['id' => $event->id]);
-            $qrCodePath = public_path('uploads/qrcodes/' . $event->id . '.png');
+            $eventUrl = route('events.show', ['uuid' => $event->uuid]);
+            $qrCodePath = public_path('uploads/qrcodes/' . $event->uuid . '.png');
             QrCode::format('png')->size(200)->generate($eventUrl, $qrCodePath);
 
             //Update the event record with the QR code path
-            $qr_code = 'uploads/qrcodes/' . $event->id . '.png';
+            $qr_code = 'uploads/qrcodes/' . $event->uuid . '.png';
 
             $event->update(['qr_code' => $qr_code]);
 
@@ -427,7 +447,7 @@ class EventController extends Controller
      */
     public function show($id)
     {
-        //get details of event 
+        //Get details of event 
         $event = Event::where('uuid', $id)->first();
 
         if ($event) {
@@ -500,7 +520,6 @@ class EventController extends Controller
             // $event = Event::find($id);
             $event = Event::where('uuid', $id)->first();
 
-
             if ($event) {
 
                 $event->user_id = isset($userId) ? $userId : $request->user_id;
@@ -549,6 +568,9 @@ class EventController extends Controller
                 $event->country =  strip_tags($request->country);
                 $event->pincode = $request->pincode;
                 $event->feedback = $request->feedback;
+                $event->why_attend_info = $request->why_attend_info;
+                $event->more_information = $request->more_information;
+                $event->t_and_conditions = $request->t_and_conditions;
 
                 // if ($request->status === '2') {
 
