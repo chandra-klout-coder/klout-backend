@@ -3,6 +3,7 @@
 Klout Club Web Application is a powerful and versatile tool designed to streamline the planning, management, and execution of events, ranging from small gatherings to large-scale events. Klout is essential for professionals in the event management industry, as well as businesses and individuals who want to organize successful events with efficiency and precision.
 
 ## Available Features
+
 - Organizer Registration / Login / Forget Password / Reset Password / OTP Verifications
 - Dashboard Widgets and Analytics Data
 - Manage Events
@@ -29,7 +30,6 @@ DB_DATABASE=klout
 DB_USERNAME=
 DB_PASSWORD=
 
-
 MAIL_MAILER=
 MAIL_HOST=
 MAIL_PORT=
@@ -48,7 +48,7 @@ Step-6: php artisan serve
 
 ## Contributing
 
-Chandra Bhushan Sharma - DigiMantra Labs - Mohali
+Chandra Bhushan Sharma - Insightner - Gurgoan
 ## Code of Conduct
 
 In order to ensure that the klout-app follows the PSR-2 coding standard and the PSR-4 autoloading standard.

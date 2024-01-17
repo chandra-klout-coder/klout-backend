@@ -388,7 +388,6 @@ class AttendeeController extends Controller
     public function show($id)
     {
         // get details of event 
-        // $attendee = Attendee::find($id);
         $attendee = Attendee::where('uuid', $id)->first();
 
         $eventID = Event::where('id', $attendee->event_id)->first()->uuid;

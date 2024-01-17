@@ -81,6 +81,36 @@ class EventController extends Controller
         }
     }
 
+    //Process Deep Link For Mobile App and Event
+    public function processEvent(Request $request)
+    {
+        // Retrieve the event UUID from the query parameters
+        $eventUuid = $request->input('eventuuid');
+
+        if ($eventUuid) {
+            $events = Event::where('uuid', $eventUuid)->first();
+
+            if ($events) {
+
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Event Details',
+                    'data' => $events
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Event Not Found'
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Event Not Found'
+            ]);
+        }
+    }
+
     public function all_events()
     {
         $events = Event::where('status', '==', 1)->get()->toArray();
@@ -121,6 +151,59 @@ class EventController extends Controller
             ]);
         }
     }
+
+
+
+    //Accept or Decline Event Invitation
+    public function accept_decline_event_invitation(Request $request)
+    {
+        $event_uuid = $request->input('event_uuid');
+        $email = $request->input('email');
+        $phone_number = $request->input('phone_number');
+        $acceptance = $request->input('acceptance');
+
+        if ((!empty($email) || !empty($phone_number)) && !empty($event_uuid)) {
+
+            $invitations = DB::table('attendees')
+                ->where('attendees.email_id', $email)
+                ->where('event_id', $event_uuid)
+                ->orWhere('attendees.phone_number', $phone_number)
+                ->where('event_invitation', 1)
+                ->first();
+
+            if ($invitations && $acceptance) {
+
+                $accept = Attendee::where('id', $invitations->id)
+                    ->update(['event_invitation' => 1]);
+
+                if ($accept) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Event Invitation Accepted Successfully.',
+                    ]);
+                }
+                
+            } else {
+
+                $accept = Attendee::where('id', $invitations->id)
+                    ->update(['event_invitation' => 0]);
+
+                if ($accept) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Event Invitation Declined.',
+                    ]);
+                }
+            }
+        } else {
+            return response()->json([
+                'status' => 400,
+                'message' => 'User not Found.Please Contact to Organizer.',
+            ]);
+        }
+    }
+
+
 
     // Accept Event Invitaions
     public function accept_event_invitation(Request $request)
@@ -207,7 +290,6 @@ class EventController extends Controller
                 }
 
                 $userID = Event::where('id', $request->event_id)->first()->user_id;
-
 
                 $attendee = new Attendee();
 
@@ -731,8 +813,6 @@ class EventController extends Controller
                 Mail::to($record['email_id'])->send(new EventReminderEmail($event_attendee_details));
             }
         }
-
-
 
         return response()->json(['message' => 'Reminder emails sent successfully']);
     }

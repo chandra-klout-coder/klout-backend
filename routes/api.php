@@ -20,7 +20,7 @@ use App\Http\Controllers\API\SponsorController;
 Route::get('/test', [AuthController::class, 'test']);
 
 //Auth - Login
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 //Auth - Register
 Route::post('/register', [AuthController::class, 'register']);
@@ -92,6 +92,12 @@ Route::post('/accept_event_invitation', [EventController::class, 'accept_event_i
 //Request for Event Invitaion  - Mobile App
 Route::post('/request_event_invitation', [EventController::class, 'request_event_invitation']);
 
+//Accept or Decline Event Invitation 
+Route::post('/accept_decline_event_invitation', [EventController::class, 'accept_decline_event_invitation']);
+
+//Process Deep Link For Mobile App and Event
+Route::get('/process-event', [EventController::class, 'processEvent']);
+
 //Protecting Routes
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -104,13 +110,13 @@ Route::middleware('auth:sanctum')->group(function () {
   });
 
   //Logout 
-  Route::post('logout', [AuthController::class, 'logout']);
+  Route::post('/logout', [AuthController::class, 'logout']);
 
   //Update Profile
-  Route::post('updateprofile', [UserController::class, 'updateprofile']);
+  Route::post('/updateprofile', [UserController::class, 'updateprofile']);
 
   //Change Password
-  Route::post('changepassword', [UserController::class, 'changePassword']);
+  Route::post('/changepassword', [UserController::class, 'changePassword']);
 
   //Events
   Route::get('/events', [EventController::class, 'index']);
@@ -191,6 +197,7 @@ Route::get('/send-mail-reminder-regular-interval', [NotificationController::clas
 //Notification - Send Reminder SMS at regular Interval
 Route::get('/send-sms-reminder-regular-interval', [NotificationController::class, 'sendSmsReminderRegularInterval']);
 
+//Send SMS
 Route::get('/send-sms', [AttendeeController::class, 'sendsms']);
 
 //Subscribe
@@ -212,58 +219,19 @@ Route::get('/show-website-settings/{key}', [AuthController::class, 'show_website
 Route::get('/all-website-settings', [AuthController::class, 'all_website_settings']);
 
 /**
- *  Mapping Module
- *  Unassigned Data 
+ *  Mapping Module - Unassigned Data 
  *  */
 // Unassigned Data for Industry, Company, Job-Title, Country , State and City
 Route::post('/unassignedData', [MappingModuleController::class, 'unassignedData']);
 
 /**
- *  Mapping Module
- *  Assigned Data 
+ *  Mapping Module - Assigned Data 
  **/
 Route::post('/assignedCitiesData',[MappingModuleController::class, 'assignedCitiesData']);
 Route::post('/assignedStatesData',[MappingModuleController::class, 'assignedStatesData']);
 Route::post('/assignedCountriesData',[MappingModuleController::class, 'assignedCountriesData']);
 Route::post('/assignedIndustriesData',[MappingModuleController::class, 'assignedIndustriesData']);
 Route::post('/assignedJobTitlesData',[MappingModuleController::class, 'assignedJobTitlesData']);
-
-/**
- *  For App
- **/
- Route::get('/get-industries', [AuthController::class, 'get_industries']);
- Route::get('/get-job-titles', [AuthController::class, 'get_job_titles']);
- Route::get('/get-companies', [AuthController::class, 'get_companies']);
- Route::post('/others-unasssigned-data', [AuthController::class, 'others_unasssigned_data']);
- Route::post('/city-wise-event', [AuthController::class, 'city_wise_event']);
-
-/**
- *  Mapping Module - City CRUD 
- **/
-Route::get('/cities', [MappingModuleController::class, 'cities']);
-Route::get('/show-cities/{id}', [MappingModuleController::class, 'show_cities']);
-Route::post('/save-cities', [MappingModuleController::class, 'save_cities']);
-Route::put('/update-cities/{id}', [MappingModuleController::class, 'update_cities']);
-Route::delete('/destroy-cities/{id}', [MappingModuleController::class, 'destroy_cities']);
-
-/**
- *  Mapping Module - State CRUD 
- **/
-Route::get('/states', [MappingModuleController::class, 'states']);
-Route::get('/show-states/{id}', [MappingModuleController::class, 'show_states']);
-Route::post('/save-states', [MappingModuleController::class, 'save_states']);
-Route::put('/update-states/{id}', [MappingModuleController::class, 'update_states']);
-Route::delete('/destroy-states/{id}', [MappingModuleController::class, 'destroy_states']);
-
-/**
- *  Mapping Module - Country CRUD 
- **/
-Route::get('/countries', [MappingModuleController::class, 'countries']);
-Route::get('/show-countries/{id}', [MappingModuleController::class, 'show_countries']);
-Route::post('/save-countries', [MappingModuleController::class, 'save_countries']);
-Route::put('/update-countries/{id}', [MappingModuleController::class, 'update_countries']);
-Route::delete('/destroy-countries/{id}', [MappingModuleController::class, 'destroy_countries']);
-
 
 
 
