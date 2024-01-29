@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
+use App\Models\EmployeeSize;
 use App\Models\Event;
 use App\Models\UnassignedData;
 use Maatwebsite\Excel\Concerns\ToArray;
@@ -44,6 +45,26 @@ class AuthController extends Controller
     {
         $this->emailService = $emailService;
         $this->smsService = $smsService;
+    }
+
+    //Check Authentication
+    public function checkingAuthenticated()
+    {
+
+        $user = Auth::user();
+
+        if ($user) {
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'You are in Klout Club Application.'
+            ]);
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Redirect to Login Page.'
+            ]);
+        }
     }
 
     //Mobile App
@@ -64,6 +85,161 @@ class AuthController extends Controller
             ]);
         }
     }
+    //Countries List
+    public function countries()
+    {
+        $countries = Country::all();
+
+        if ($countries) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'All Countries',
+                'data' => $countries
+            ]);
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Data not Found'
+            ]);
+        }
+    }
+
+    //States List
+    public function states()
+    {
+        $states = State::all();
+
+        if ($states) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'All States',
+                'data' => $states
+            ]);
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Data not Found'
+            ]);
+        }
+    }
+
+    //Get States By Country Id
+    public function getStatesByCountryId($country_id)
+    {
+        // $country_id = $request->input('country_id');
+
+        if ($country_id) {
+
+            $states = State::where('country_id', $country_id)->get();
+
+            if (count($states) > 0) {
+
+
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'All States List for Country',
+                    'data' => $states
+                ]);
+            } else {
+                $data = [["id" => 0, "name" => "Others"]];
+
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'All States List for Country',
+                    'data' => $data
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Data not Found'
+            ]);
+        }
+    }
+
+    //Cities List
+    public function cities()
+    {
+        $cities = City::all();
+
+        if ($cities) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'All Cities',
+                'data' => $cities
+            ]);
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Data not Found'
+            ]);
+        }
+    }
+
+    //Get Cities By State Id
+    public function getCitiesByStateId($state_id)
+    {
+        // $state_id = $request->input('state_id');
+        // $country_id = $request->input('country_id');
+
+        if ($state_id === "0") {
+            $data = [["id" => 0, "name" => "Others"]];
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'All Cities List for State',
+                'data' => $data
+            ]);
+        }
+
+        if ($state_id) {
+
+            $cities = City::where('state_id', $state_id)->get();
+
+            if (count($cities) > 0) {
+
+
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'All Cities List for State',
+                    'data' => $cities
+                ]);
+            } else {
+
+                $data = [["id" => 0, "name" => "Others"]];
+
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'All Cities List for State',
+                    'data' => $data
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Data not Found'
+            ]);
+        }
+    }
+
+    public function employeeSize()
+    {
+        $employees = EmployeeSize::all();
+
+        if ($employees) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'All Employees',
+                'data' => $employees
+            ]);
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Data not Found'
+            ]);
+        }
+    }
+
 
     public function get_job_titles()
     {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\City;
 use Carbon\Carbon;
 use App\Models\Event;
 use Ramsey\Uuid\Uuid;
@@ -13,13 +14,14 @@ use App\Mail\EventReminderEmail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\Controller;
+use App\Models\Country;
+use App\Models\State;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\DB;
-
 
 class EventController extends Controller
 {
@@ -111,6 +113,25 @@ class EventController extends Controller
         }
     }
 
+    //City Wise Event
+    public function city_wise_event(Request $request)
+    {
+        $events = Event::where('status', '==', 1)->where('city', $request->city_id)->get()->toArray();
+
+        if ($events) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'City-Wise Events',
+                'data' => $events
+            ]);
+        } else {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Event not Found',
+            ]);
+        }
+    }
+
     public function all_events()
     {
         $events = Event::where('status', '==', 1)->get()->toArray();
@@ -182,7 +203,6 @@ class EventController extends Controller
                         'message' => 'Event Invitation Accepted Successfully.',
                     ]);
                 }
-                
             } else {
 
                 $accept = Attendee::where('id', $invitations->id)
@@ -423,7 +443,7 @@ class EventController extends Controller
         //input validation 
         $validator = Validator::make($request->all(), [
             'title' => 'required|max:100',
-            'description' => 'required|max:500',
+            'description' => 'required',
             'event_date' => 'required|date',
             'image' => 'required|image|mimes:jpeg,png,jpg|max:4098',
             'event_venue_name' => 'required|max:255',
@@ -452,7 +472,7 @@ class EventController extends Controller
         $event->uuid = Uuid::uuid4()->toString();
         $event->user_id = isset($userId) ? $userId : $request->user_id;
         $event->title = ucfirst($request->title);
-        $event->description = ucfirst(strip_tags($request->description));
+        $event->description = $request->description;
         $event->event_date = $request->event_start_date;
 
         $event->event_start_date = $request->event_start_date;
@@ -530,14 +550,58 @@ class EventController extends Controller
     public function show($id)
     {
         //Get details of event 
-        $event = Event::where('uuid', $id)->first();
+        $event = Event::where('uuid', $id)->get();
 
-        if ($event) {
+        $eventDetails = [];
+
+        foreach ($event as $row) {
+
+            $city = City::where('id', $row->city)->first();
+
+            $state = State::where('id', $row->state)->first();
+
+            $eventDetails = array(
+                "id" => $row->id,
+                "uuid" => $row->uuid,
+                "user_id" => $row->user_id,
+                "title" => $row->title,
+                "description" => $row->description,
+                "event_date" => $row->event_date,
+                "location" => $row->location,
+                "start_time" => $row->start_time,
+                "start_time_type" => $row->start_time_type,
+                "end_time" => $row->end_time,
+                "end_time_type" => $row->end_time_type,
+                "image" => $row->image,
+                "event_venue_name" => $row->event_venue_name,
+                "event_venue_address_1" => $row->event_venue_address_1,
+                "event_venue_address_2" => $row->event_venue_address_2,
+                "city" => !empty($city->name) ? $city->name : "Others",
+                "state" => !empty($state->name) ? $state->name : "Others",
+                "country" => Country::where('id', $row->country)->first()->name,
+                "pincode" => $row->pincode,
+                "created_at" => $row->created_at,
+                "updated_at" => $row->updated_at,
+                "status" => $row->status,
+                "end_minute_time" => $row->end_minute_time,
+                "start_minute_time" => $row->start_minute_time,
+                "qr_code" => $row->qr_code,
+                "start_time_format" => $row->start_time_interval,
+                "feedback" => $row->feedback,
+                "event_start_date" => $row->event_start_date,
+                "event_end_date" =>  $row->event_end_date,
+                "why_attend_info" =>  $row->why_attend_info,
+                "more_information" => $row->more_information,
+                "t_and_conditions" => $row->t_and_condition
+            );
+        }
+
+        if ($eventDetails) {
 
             return response()->json([
                 'status' => 200,
                 'message' => 'Event Details',
-                'data' => $event
+                'data' => $eventDetails
             ]);
         } else {
 

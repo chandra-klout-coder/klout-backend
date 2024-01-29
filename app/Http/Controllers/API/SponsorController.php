@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\EmployeeSize;
 use PDF;
 
 use App\Models\Event;
@@ -28,7 +29,7 @@ use Illuminate\Support\Facades\Validator;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 use App\Helpers\HashidsHelper;
-
+use App\Models\Country;
 use Ramsey\Uuid\Uuid;
 class SponsorController extends Controller
 {
@@ -186,10 +187,10 @@ class SponsorController extends Controller
             "brand_name" => $sponsor->brand_name,
             "official_email" => $sponsor->official_email,
             "phone_number" => $sponsor->phone_number,
-            "country" => $sponsor->country,
+            "country" => Country::where('id', $sponsor->country)->first()->name,
             "city" => $sponsor->city,
             "website" => $sponsor->website,
-            "employee_size" => $sponsor->employee_size,
+            "employee_size" => EmployeeSize::where('id',$sponsor->employee_size)->first()->size,
             "linkedin_page_link" => $sponsor->linkedin_page_link,
             // "sponsorship_package_id" => $sponsor->sponsorship_package,
             // "sponsorship_package" => SponsorshipPackages::where('id', $sponsor->sponsorship_package)->first()->name,

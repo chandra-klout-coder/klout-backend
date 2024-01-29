@@ -20,7 +20,7 @@ use App\Http\Controllers\API\SponsorController;
 Route::get('/test', [AuthController::class, 'test']);
 
 //Auth - Login
-Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('login', [AuthController::class, 'login']);
 
 //Auth - Register
 Route::post('/register', [AuthController::class, 'register']);
@@ -42,6 +42,28 @@ Route::get('/industries', [AuthController::class, 'industries']);
 
 //Keyword Mapping -- Country
 Route::post('/country', [AuthController::class, 'country']);
+
+
+
+
+// Coutries List
+Route::get('/countries', [AuthController::class, 'countries']);
+
+// States List
+Route::get('/states', [AuthController::class, 'states']);
+
+//Get States by Country ID
+Route::get('/getStatesByCountryId/{country_id}', [AuthController::class, 'getStatesByCountryId']);
+
+//Get States by Country ID
+Route::get('/getCitiesByStateId/{state_id}', [AuthController::class, 'getCitiesByStateId']);
+
+// Cities List by State ID
+Route::get('/cities', [AuthController::class, 'cities']);
+
+//Employee Size Details
+Route::get('/emloyeee-size', [AuthController::class, 'employeeSize']);
+
 
 //Keyword Mapping -- Skills
 Route::post('/skills', [AuthController::class, 'skills']);
@@ -80,6 +102,9 @@ Route::get('/resource/{id}', [ResourceCotroller::class, 'show']);
 //All Events - Mobile App 
 Route::get('/all_events', [EventController::class, 'all_events']);
 
+//All Events City Wise
+Route::post('/city-wise-event', [EventController::class, 'city_wise_event']);
+
 //Recommended Events - Mobile App
 Route::get('/recommended_events', [EventController::class, 'recommended_events']);
 
@@ -98,6 +123,7 @@ Route::post('/accept_decline_event_invitation', [EventController::class, 'accept
 //Process Deep Link For Mobile App and Event
 Route::get('/process-event', [EventController::class, 'processEvent']);
 
+
 //Protecting Routes
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -105,9 +131,17 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('profile', [UserController::class, 'profile']);
 
   //Check Authentication
-  Route::get('/checkingAuthenticated', function () {
-    return response()->json(['message' => 'You are in', 'status' => 200], 200);
-  });
+  // Route::get('/checkingAuthenticated', function () {
+  //   return response()->json(['message' => 'You are in', 'status' => 200], 200);
+  // });
+
+  //Check Authentication
+  Route::get('/checkingAuthenticated', [AuthController::class, 'checkingAuthenticated']);
+
+  //Delete user details
+  Route::delete('/users/{id}', [UserController::class, 'deleteUser']);
+
+
 
   //Logout 
   Route::post('/logout', [AuthController::class, 'logout']);
@@ -227,14 +261,8 @@ Route::post('/unassignedData', [MappingModuleController::class, 'unassignedData'
 /**
  *  Mapping Module - Assigned Data 
  **/
-Route::post('/assignedCitiesData',[MappingModuleController::class, 'assignedCitiesData']);
-Route::post('/assignedStatesData',[MappingModuleController::class, 'assignedStatesData']);
-Route::post('/assignedCountriesData',[MappingModuleController::class, 'assignedCountriesData']);
-Route::post('/assignedIndustriesData',[MappingModuleController::class, 'assignedIndustriesData']);
-Route::post('/assignedJobTitlesData',[MappingModuleController::class, 'assignedJobTitlesData']);
-
-
-
-
-
-
+Route::post('/assignedCitiesData', [MappingModuleController::class, 'assignedCitiesData']);
+Route::post('/assignedStatesData', [MappingModuleController::class, 'assignedStatesData']);
+Route::post('/assignedCountriesData', [MappingModuleController::class, 'assignedCountriesData']);
+Route::post('/assignedIndustriesData', [MappingModuleController::class, 'assignedIndustriesData']);
+Route::post('/assignedJobTitlesData', [MappingModuleController::class, 'assignedJobTitlesData']);

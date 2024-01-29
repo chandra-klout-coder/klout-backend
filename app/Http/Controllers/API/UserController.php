@@ -25,10 +25,36 @@ class UserController extends Controller
         $this->smsService = $smsService;
     }
 
+    //Delete User
+    public function deleteUser($id)
+    {
+        if ($id) {
+
+            $user = User::find($id);
+
+            if (!$user) {
+                return response()->json(['status' => 404, 'message' => 'User not found']);
+            }
+
+            $user->delete(); // Soft delete
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'User-Profile Deleted Successfully',
+            ]);
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Invalid Request',
+            ]);
+        }
+    }
+
     //Auth - Get User Details
     public function profile()
     {
         $user = Auth::user();
+
 
         if ($user) {
 
