@@ -178,12 +178,12 @@ class AuthController extends Controller
 
             if (count($cities) > 0) {
 
-
                 return response()->json([
                     'status' => 200,
                     'message' => 'All Cities List for State',
                     'data' => $cities
                 ]);
+                
             } else {
 
                 $data = [["id" => 0, "name" => "Others"]];
