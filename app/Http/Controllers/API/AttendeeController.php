@@ -36,11 +36,12 @@ class AttendeeController extends Controller
         $this->smsService = $smsService;
     }
 
+
     public function sendsms()
     {
 
         if ($this->smsService->sendSMS('+918709289369', 'You are invited to the event!')) {
-            return response()->json(['message' => 'Attendee created successfully'], 201);
+            return response()->json(['message' => 'send message successfully'], 201);
         }
     }
 

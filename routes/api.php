@@ -43,9 +43,6 @@ Route::get('/industries', [AuthController::class, 'industries']);
 //Keyword Mapping -- Country
 Route::post('/country', [AuthController::class, 'country']);
 
-
-
-
 // Coutries List
 Route::get('/countries', [AuthController::class, 'countries']);
 
@@ -58,12 +55,16 @@ Route::get('/getStatesByCountryId/{country_id}', [AuthController::class, 'getSta
 //Get States by Country ID
 Route::get('/getCitiesByStateId/{state_id}', [AuthController::class, 'getCitiesByStateId']);
 
+
+
+
+
+
 // Cities List by State ID
 Route::get('/cities', [AuthController::class, 'cities']);
 
 //Employee Size Details
 Route::get('/emloyeee-size', [AuthController::class, 'employeeSize']);
-
 
 //Keyword Mapping -- Skills
 Route::post('/skills', [AuthController::class, 'skills']);
@@ -141,7 +142,8 @@ Route::middleware('auth:sanctum')->group(function () {
   //Delete user details
   Route::delete('/users/{id}', [UserController::class, 'deleteUser']);
 
-
+  //Display Events
+  Route::get('/display/{id}', [EventController::class, 'display']);
 
   //Logout 
   Route::post('/logout', [AuthController::class, 'logout']);

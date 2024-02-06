@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Models\City;
 use Carbon\Carbon;
 use App\Models\Event;
 use Ramsey\Uuid\Uuid;
@@ -15,6 +14,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\Controller;
 use App\Models\Country;
+use App\Models\City;
 use App\Models\State;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Auth;
@@ -65,7 +65,49 @@ class EventController extends Controller
                 'total_rejected' => $total_rejected
             );
 
-            $event_data[] = array_merge($event, $event_data1);
+            $eventDetails = [];
+
+            $city = City::where('id', $event['city'])->first();
+
+            $state = State::where('id', $event['state'])->first();
+
+            $eventDetails = array(
+                "id" => $event['id'],
+                "uuid" => $event['uuid'],
+                "user_id" => $event['user_id'],
+                "title" => $event['title'],
+                "description" => $event['description'],
+                "event_date" => $event['event_date'],
+                "location" => !empty($city->name) ? $city->name : "Others",
+                "start_time" => $event['start_time'],
+                "start_time_type" => $event['start_time_type'],
+                "end_time" => $event['end_time'],
+                "end_time_type" => $event['end_time_type'],
+                "image" => $event['image'],
+                "event_venue_name" => $event['event_venue_name'],
+                "event_venue_address_1" => $event['event_venue_address_1'],
+                "event_venue_address_2" => $event['event_venue_address_2'],
+                "city" => !empty($city->name) ? $city->name : "Others",
+                "state" => !empty($state->name) ? $state->name : "Others",
+                "country" => Country::where('id', $event['country'])->first()->name,
+                "pincode" => $event['pincode'],
+                "created_at" => $event['created_at'],
+                "updated_at" => $event['updated_at'],
+                "status" => $event['status'],
+                "end_minute_time" => $event['end_minute_time'],
+                "start_minute_time" => $event['start_minute_time'],
+                "qr_code" => $event['qr_code'],
+                "start_time_format" => $event['start_time_format'],
+                "feedback" => $event['feedback'],
+                "event_start_date" => $event['event_start_date'],
+                "event_end_date" =>  $event['event_end_date'],
+                "why_attend_info" =>  $event['why_attend_info'],
+                "more_information" => $event['more_information'],
+                "t_and_conditions" => $event['t_and_conditions']
+            );
+
+            $event_data[] = array_merge($eventDetails, $event_data1);
+            unset($eventDetails);
         }
 
         if ($events) {
@@ -134,10 +176,12 @@ class EventController extends Controller
 
     public function all_events()
     {
-        $events = Event::where('status', '==', 1)->get()->toArray();
+        $events = Event::all()->toArray();
 
         $event_data = [];
 
+        $total_attendee = $total_accepted = $total_rejected = $total_not_accepted = 0;
+        
         foreach ($events as $event) {
 
             $total_attendee = Attendee::where('event_id', $event['id'])->count();
@@ -155,8 +199,51 @@ class EventController extends Controller
                 'total_rejected' => $total_rejected
             );
 
-            $event_data[] = array_merge($event, $event_data1);
+            $eventDetails = [];
+
+            $city = City::where('id', $event['city'])->first();
+
+            $state = State::where('id', $event['state'])->first();
+
+            $eventDetails = array(
+                "id" => $event['id'],
+                "uuid" => $event['uuid'],
+                "user_id" => $event['user_id'],
+                "title" => $event['title'],
+                "description" => $event['description'],
+                "event_date" => $event['event_date'],
+                "location" => !empty($city->name) ? $city->name : "Others",
+                "start_time" => $event['start_time'],
+                "start_time_type" => $event['start_time_type'],
+                "end_time" => $event['end_time'],
+                "end_time_type" => $event['end_time_type'],
+                "image" => $event['image'],
+                "event_venue_name" => $event['event_venue_name'],
+                "event_venue_address_1" => $event['event_venue_address_1'],
+                "event_venue_address_2" => $event['event_venue_address_2'],
+                "city" => !empty($city->name) ? $city->name : "Others",
+                "state" => !empty($state->name) ? $state->name : "Others",
+                "country" => Country::where('id', $event['country'])->first()->name,
+                "pincode" => $event['pincode'],
+                "created_at" => $event['created_at'],
+                "updated_at" => $event['updated_at'],
+                "status" => $event['status'],
+                "end_minute_time" => $event['end_minute_time'],
+                "start_minute_time" => $event['start_minute_time'],
+                "qr_code" => $event['qr_code'],
+                "start_time_format" => $event['start_time_format'],
+                "feedback" => $event['feedback'],
+                "event_start_date" => $event['event_start_date'],
+                "event_end_date" =>  $event['event_end_date'],
+                "why_attend_info" =>  $event['why_attend_info'],
+                "more_information" => $event['more_information'],
+                "t_and_conditions" => $event['t_and_conditions']
+            );
+
+            $event_data[] = array_merge($eventDetails, $event_data1);
+            unset($eventDetails);
         }
+
 
         if ($events) {
             return response()->json([
@@ -172,8 +259,6 @@ class EventController extends Controller
             ]);
         }
     }
-
-
 
     //Accept or Decline Event Invitation
     public function accept_decline_event_invitation(Request $request)
@@ -222,8 +307,6 @@ class EventController extends Controller
             ]);
         }
     }
-
-
 
     // Accept Event Invitaions
     public function accept_event_invitation(Request $request)
@@ -547,9 +630,9 @@ class EventController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+
+    public function display($id)
     {
-        //Get details of event 
         $event = Event::where('uuid', $id)->get();
 
         $eventDetails = [];
@@ -567,7 +650,7 @@ class EventController extends Controller
                 "title" => $row->title,
                 "description" => $row->description,
                 "event_date" => $row->event_date,
-                "location" => $row->location,
+                "location" => !empty($city->name) ? $city->name : "Others",
                 "start_time" => $row->start_time,
                 "start_time_type" => $row->start_time_type,
                 "end_time" => $row->end_time,
@@ -612,6 +695,27 @@ class EventController extends Controller
         }
     }
 
+    public function show($id)
+    {
+        //Get details of event 
+        $event = Event::where('uuid', $id)->first();
+
+        if ($event) {
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Event Details',
+                'data' => $event
+            ]);
+        } else {
+
+            return response()->json([
+                'status' => 400,
+                'message' => 'Event Not Found.'
+            ]);
+        }
+    }
+
     /**
      * Update the specified event.
      *
@@ -626,7 +730,7 @@ class EventController extends Controller
 
         $validator = Validator::make($request->all(), [
             'title' => 'required|max:100',
-            'description' => 'required|max:500',
+            'description' => 'required',
             'event_date' => 'required|date',
             'event_venue_name' => 'required|max:255',
             'start_time' => 'required',

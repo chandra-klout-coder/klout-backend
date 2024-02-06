@@ -10,6 +10,9 @@ use App\Models\Report;
 use App\Models\Attendee;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\City;
+use App\Models\State;
+use App\Models\Country;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\DB;
@@ -114,13 +117,78 @@ class ReportController extends Controller
 
         $today = Carbon::today();
 
-        $upcomingEvents = Event::whereDate('event_date', '>=', $today)->where('user_id', $userId)->get();
+        $upcomingEvents = Event::whereDate('event_date', '>=', $today)->where('user_id', $userId)->get()->toArray();
+
+        $total_attendee = $total_accepted = $total_rejected = $total_not_accepted = 0;
+
+        foreach ($upcomingEvents as $event) {
+
+            $total_attendee = Attendee::where('user_id', $userId)->where('event_id', $event['id'])->count();
+
+            $total_accepted = Attendee::where('user_id', $userId)->where('event_id', $event['id'])->where('profile_completed', 1)->count();
+
+            $total_not_accepted = Attendee::where('user_id', $userId)->where('event_id', $event['id'])->where('profile_completed', 0)->count();
+
+            $total_rejected = Attendee::where('user_id', $userId)->where('event_id', $event['id'])->where('profile_completed', 2)->count();
+
+            $event_data1 = array(
+                'total_attendee' => $total_attendee,
+                'total_accepted' => $total_accepted,
+                'total_not_accepted' => $total_not_accepted,
+                'total_rejected' => $total_rejected
+            );
+
+            $eventDetails = [];
+
+            $city = City::where('id', $event['city'])->first();
+
+            $state = State::where('id', $event['state'])->first();
+
+            $eventDetails = array(
+                "id" => $event['id'],
+                "uuid" => $event['uuid'],
+                "user_id" => $event['user_id'],
+                "title" => $event['title'],
+                "description" => $event['description'],
+                "event_date" => $event['event_date'],
+                "location" => !empty($city->name) ? $city->name : "Others",
+                "start_time" => $event['start_time'],
+                "start_time_type" => $event['start_time_type'],
+                "end_time" => $event['end_time'],
+                "end_time_type" => $event['end_time_type'],
+                "image" => $event['image'],
+                "event_venue_name" => $event['event_venue_name'],
+                "event_venue_address_1" => $event['event_venue_address_1'],
+                "event_venue_address_2" => $event['event_venue_address_2'],
+                "city" => !empty($city->name) ? $city->name : "Others",
+                "state" => !empty($state->name) ? $state->name : "Others",
+                "country" => Country::where('id', $event['country'])->first()->name,
+                "pincode" => $event['pincode'],
+                "created_at" => $event['created_at'],
+                "updated_at" => $event['updated_at'],
+                "status" => $event['status'],
+                "end_minute_time" => $event['end_minute_time'],
+                "start_minute_time" => $event['start_minute_time'],
+                "qr_code" => $event['qr_code'],
+                "start_time_format" => $event['start_time_format'],
+                "feedback" => $event['feedback'],
+                "event_start_date" => $event['event_start_date'],
+                "event_end_date" =>  $event['event_end_date'],
+                "why_attend_info" =>  $event['why_attend_info'],
+                "more_information" => $event['more_information'],
+                "t_and_conditions" => $event['t_and_conditions']
+            );
+
+            $event_data[] = array_merge($eventDetails, $event_data1);
+            unset($eventDetails);
+        }
+
 
         return response()->json([
             'status' => 200,
             'message' => 'Upcoming Events',
-            'upcoming_events' => $upcomingEvents->count(),
-            'data' => $upcomingEvents
+            'upcoming_events' => count($upcomingEvents),
+            'data' => $event_data
         ]);
     }
 

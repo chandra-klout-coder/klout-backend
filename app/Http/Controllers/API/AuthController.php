@@ -134,7 +134,6 @@ class AuthController extends Controller
 
             if (count($states) > 0) {
 
-
                 return response()->json([
                     'status' => 200,
                     'message' => 'All States List for Country',
@@ -149,25 +148,6 @@ class AuthController extends Controller
                     'data' => $data
                 ]);
             }
-        } else {
-            return response()->json([
-                'status' => 422,
-                'message' => 'Data not Found'
-            ]);
-        }
-    }
-
-    //Cities List
-    public function cities()
-    {
-        $cities = City::all();
-
-        if ($cities) {
-            return response()->json([
-                'status' => 200,
-                'message' => 'All Cities',
-                'data' => $cities
-            ]);
         } else {
             return response()->json([
                 'status' => 422,
@@ -221,6 +201,27 @@ class AuthController extends Controller
             ]);
         }
     }
+
+    //Cities List
+    public function cities()
+    {
+        $cities = City::all();
+
+        if ($cities) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'All Cities',
+                'data' => $cities
+            ]);
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Data not Found'
+            ]);
+        }
+    }
+
+
 
     public function employeeSize()
     {
