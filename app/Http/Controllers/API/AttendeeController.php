@@ -467,6 +467,7 @@ class AttendeeController extends Controller
         $attendee->industry = strip_tags($request->industry);
         $attendee->email_id = strtolower(strip_tags($request->email_id));
         $attendee->phone_number = empty($request->phone_number) ? '' : $request->phone_number;
+       
         $attendee->alternate_mobile_number = empty($request->alternate_mobile_number) ? '' : $request->alternate_mobile_number;
         $attendee->website = empty($request->website) ? '' : $request->website;
         $attendee->linkedin_page_link =  empty($request->linkedin_page_link) ? '' : $request->linkedin_page_link;
@@ -474,6 +475,8 @@ class AttendeeController extends Controller
         $attendee->employee_size = empty($request->employee_size) ? '' : $request->employee_size;
         $attendee->status = strtolower($request->status);
         $attendee->profile_completed = true;
+        $attendee->event_invitation = 0;
+        $attendee->user_invitation_request = 1;
 
         //Handle image upload and store the image path
         if ($request->hasFile('image')) {
@@ -573,7 +576,7 @@ class AttendeeController extends Controller
         // $attendee = Attendee::find($id);
 
         $attendee = Attendee::where('uuid', $id)->first();
-        $eventID = Event::where('uuid', $request->event_id)->first()->id;
+        $eventID = Event::where('id', $request->event_id)->first()->id;
 
         if ($attendee) {
 
@@ -587,12 +590,15 @@ class AttendeeController extends Controller
             $attendee->email_id = strtolower(strip_tags($request->email_id));
             $attendee->phone_number = empty($request->phone_number) ? '' : $request->phone_number;
             $attendee->alternate_mobile_number = empty($request->alternate_mobile_number) ? '' : $request->alternate_mobile_number;
-            $attendee->website = empty($request->website) ? ' ' : $request->website;
+            $attendee->website = empty($request->website) ? '' : $request->website;
             $attendee->linkedin_page_link =  empty($request->linkedin_page_link) ? '' : $request->linkedin_page_link;
             $attendee->company_turn_over = empty($request->company_turn_over) ? '' : $request->company_turn_over;
             $attendee->employee_size = empty($request->employee_size) ? '' : $request->employee_size;
             $attendee->status = strtolower($request->status);
+
             $attendee->profile_completed = true;
+            $attendee->event_invitation = 0;
+            $attendee->user_invitation_request = 1;
 
             //Handle image upload and store the image path
             if ($request->hasFile('image')) {

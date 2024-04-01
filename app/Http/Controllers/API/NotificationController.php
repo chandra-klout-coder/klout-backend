@@ -304,26 +304,8 @@ class NotificationController extends Controller
 
             $eventId = $request->event_id;
 
-            //     "event_id" => "50"
-            //     "start_date" => "2023-08-24"
-            //     "start_date_time" => "01"
-            //     "start_date_type" => "am"
-            //     "end_date" => "2023-08-25"
-            //     "end_date_time" => "01"
-            //     "end_date_type" => "pm"
-            //     "no_of_times" => "1"
-            //     "hour_interval" => "12"
+            $event = Event::where('uuid', $eventId)->first();
 
-            $event = Event::where('id', $eventId)->first();
-
-            // "event_start_date" => "2023-08-25"
-            // "event_end_date" => "2023-08-30"
-            // "start_time" => "09"
-            // "start_minute_time" => "30"
-            // "start_time_type" => "AM"
-            // "end_time" => "06"
-            // "end_minute_time" => "30"
-            // "end_time_type" => "PM"
 
             $schedule_start_time = $request->start_date_time . ':00 ' . $request->start_date_type;
             $event_start_time = $event->start_time . ' : ' . $event->start_minute_time . ' ' . $event->start_time_type;
@@ -350,7 +332,7 @@ class NotificationController extends Controller
                         if ($scheduleIntervalDate <= $scheduleEndDate) {
 
                             $notify->user_id = $userId;
-                            $notify->event_id = $request->event_id;
+                            $notify->event_id = $event->id;
                             $notify->send_to = $insert_roles;
                             $notify->send_method = strtolower($request->send_method);
                             $notify->subject = !empty($request->subject) ?  $request->subject : '';

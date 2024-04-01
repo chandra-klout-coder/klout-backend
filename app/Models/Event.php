@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Attendee;
 use App\Models\Notification;
 use App\Models\SmsNotification;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 

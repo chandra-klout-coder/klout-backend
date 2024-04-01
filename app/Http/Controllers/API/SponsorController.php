@@ -31,6 +31,7 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Helpers\HashidsHelper;
 use App\Models\Country;
 use Ramsey\Uuid\Uuid;
+
 class SponsorController extends Controller
 {
     /**
@@ -153,14 +154,7 @@ class SponsorController extends Controller
         }
     }
 
-    /**
-     * Show Sponsor Detail
-     * Display Sponsor Details.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+    public function display($id)
     {
         // $sponsor = Sponsor::find($id);
         $sponsor = Sponsor::where('uuid', $id)->first();
@@ -190,7 +184,7 @@ class SponsorController extends Controller
             "country" => Country::where('id', $sponsor->country)->first()->name,
             "city" => $sponsor->city,
             "website" => $sponsor->website,
-            "employee_size" => EmployeeSize::where('id',$sponsor->employee_size)->first()->size,
+            "employee_size" => EmployeeSize::where('id', $sponsor->employee_size)->first()->size,
             "linkedin_page_link" => $sponsor->linkedin_page_link,
             // "sponsorship_package_id" => $sponsor->sponsorship_package,
             // "sponsorship_package" => SponsorshipPackages::where('id', $sponsor->sponsorship_package)->first()->name,
@@ -214,6 +208,33 @@ class SponsorController extends Controller
     }
 
     /**
+     * Show Sponsor Detail
+     * Display Sponsor Details.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        // $sponsor = Sponsor::find($id);
+        $sponsor = Sponsor::where('uuid', $id)->first();
+
+        if (!empty($sponsor)) {
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Sponsor Detail',
+                'data' => $sponsor
+            ]);
+        } else {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Data Not Found',
+            ]);
+        }
+    }
+
+    /**
      * Save Sponsor details.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -223,7 +244,9 @@ class SponsorController extends Controller
     {
         $userId = Auth::id();
 
-        $event_original_id = Event::where('uuid', $request->event_id)->first()->id;
+        if (isset($request->event_id) && !empty($request->event_id)) {
+            $event_original_id = Event::where('uuid', $request->event_id)->first()->id;
+        }
 
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|max:30',
@@ -251,26 +274,11 @@ class SponsorController extends Controller
         }
 
 
-
-        // if (!empty($request->hasFile('file'))) {
-
-        //     $validator = Validator::make($request->all(), [
-        //         'file' => 'required|mimes:pdf|max:2048',
-        //     ]);
-
-        //     if ($validator->fails()) {
-        //         return response()->json([
-        //             'status' => 422,
-        //             'errors' => $validator->errors()
-        //         ]);
-        //     }
-        // }
-
         $sponsor = new Sponsor();
 
         $sponsor->user_id = $userId;
         $sponsor->uuid = Uuid::uuid4()->toString();
-        $sponsor->event_id = $event_original_id;
+        $sponsor->event_id = !empty($event_original_id) ? $event_original_id : "0";
         $sponsor->first_name = strip_tags($request->first_name);
         $sponsor->last_name = strip_tags($request->last_name);
         $sponsor->job_title = $request->job_title;
@@ -338,8 +346,6 @@ class SponsorController extends Controller
 
     public function update(Request $request, $id)
     {
-
-
         $userId = Auth::id();
 
         $validator = Validator::make($request->all(), [
@@ -504,18 +510,18 @@ class SponsorController extends Controller
                 foreach ($sponsors as $record) {
 
                     $sponsor_email = "";
-                    
+
                     if ($file_type === "pdf") {
-                        
+
                         //Generate PDF File
                         $pdf = PDF::loadView('pdf.attendee_list', compact('attendeeData'));
-                        
+
                         $pdfFilePath = storage_path('app/temp/attendee_list.pdf');
-                        
+
                         $pdf->save($pdfFilePath);
-                        
+
                         $sponsor_email = $record->email_id;
-                
+
                         Mail::send('emails.attendee_list', [], function ($message) use ($pdfFilePath, $sponsor_email) {
                             $message->to($sponsor_email)->subject('Attendee List');
                             $message->attach($pdfFilePath, [
@@ -547,15 +553,13 @@ class SponsorController extends Controller
                                 'mime' => 'application/csv',
                             ]);
                         });
-
                     } else {
-                        
+
                         return response()->json(['status' => 400, 'message' => 'Something Went Wrong.Please try again later.']);
                     }
                 }
 
                 return response()->json(['status' => 200, 'message' => 'Attendees List shared with Sponsors successfully.']);
-            
             } else {
 
                 return response()->json(['status' => 200, 'message' => 'Sponsors not Found']);

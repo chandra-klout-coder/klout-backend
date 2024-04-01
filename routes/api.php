@@ -55,16 +55,11 @@ Route::get('/getStatesByCountryId/{country_id}', [AuthController::class, 'getSta
 //Get States by Country ID
 Route::get('/getCitiesByStateId/{state_id}', [AuthController::class, 'getCitiesByStateId']);
 
-
-
-
-
-
 // Cities List by State ID
 Route::get('/cities', [AuthController::class, 'cities']);
 
 //Employee Size Details
-Route::get('/emloyeee-size', [AuthController::class, 'employeeSize']);
+Route::get('/emloyeee-size', [AuthController::class, 'employee_size']);
 
 //Keyword Mapping -- Skills
 Route::post('/skills', [AuthController::class, 'skills']);
@@ -111,6 +106,18 @@ Route::get('/recommended_events', [EventController::class, 'recommended_events']
 
 //Event Invitation List for Attendee  - Mobile App
 Route::post('/event_invitation_list', [EventController::class, 'event_invitation_list']);
+
+//Event Details page
+Route::post('/event_details_attendee_list', [EventController::class, 'event_details_attendee_list']);
+
+//All Event List for get invite
+Route::post('/all_events_attendee_list', [EventController::class, 'all_events_attendee_list']);
+
+//Delete account Route
+Route::get('/deleteAccountNow', [AuthController::class, "deleteAccountNow"]);
+
+//Send SMS
+Route::get('/send-sms-textlocal', [AuthController::class, "send_sms"]);
 
 //Accept Event Invitaion By Attendee  - Mobile App
 Route::post('/accept_event_invitation', [EventController::class, 'accept_event_invitation']);
@@ -172,6 +179,7 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('/virtualbusinesscard/{attendee_id}', [AttendeeController::class, 'getVitualBusinessCard']);
 
   //Event-sponsors
+  Route::get('/display-sponsors/{id}', [SponsorController::class, 'display']);
   Route::get('/sponsors', [SponsorController::class, 'index']);
   Route::get('/sponsors/{id}', [SponsorController::class, 'show']);
   Route::get('/eventsponsors/{event_id}', [SponsorController::class, 'getSponsorByEventID']);

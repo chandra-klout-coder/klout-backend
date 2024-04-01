@@ -174,6 +174,117 @@ class EventController extends Controller
         }
     }
 
+    //Attendee List
+    public function all_events_attendee_list(Request $request)
+    {
+        $email = $request->input('email');
+
+        if (!empty($email)) {
+
+            $events = Event::all()->toArray();
+
+            $event_data = [];
+
+            $total_attendee = $total_accepted = $total_rejected = $total_not_accepted = 0;
+
+            $user_invitation_request = 0;
+
+            foreach ($events as $event) {
+
+                $total_attendee = Attendee::where('event_id', $event['id'])->count();
+
+                $total_accepted = Attendee::where('event_id', $event['id'])->where('profile_completed', 1)->count();
+
+                $total_not_accepted = Attendee::where('event_id', $event['id'])->where('profile_completed', 0)->count();
+
+                $total_rejected = Attendee::where('event_id', $event['id'])->where('profile_completed', 2)->count();
+
+                $event_data1 = array(
+                    'total_attendee' => $total_attendee,
+                    'total_accepted' => $total_accepted,
+                    'total_not_accepted' => $total_not_accepted,
+                    'total_rejected' => $total_rejected
+                );
+
+                $attend = Attendee::where('event_id', $event['id'])->where('email_id', $email)->first();
+
+                if (!empty($attend)) {
+
+                    $user_invitation_request = $attend->user_invitation_request;
+                } else {
+                    $user_invitation_request = 0;
+                }
+
+                $eventDetails = [];
+
+                $city = City::where('id', $event['city'])->first();
+
+                $state = State::where('id', $event['state'])->first();
+
+                $eventDetails = array(
+                    "id" => $event['id'],
+                    "uuid" => $event['uuid'],
+                    "user_id" => $event['user_id'],
+                    "title" => $event['title'],
+                    "description" => $event['description'],
+                    "event_date" => $event['event_date'],
+                    "location" => !empty($city->name) ? $city->name : "Others",
+                    "start_time" => $event['start_time'],
+                    "start_time_type" => $event['start_time_type'],
+                    "end_time" => $event['end_time'],
+                    "end_time_type" => $event['end_time_type'],
+                    "image" => $event['image'],
+                    "event_venue_name" => $event['event_venue_name'],
+                    "event_venue_address_1" => $event['event_venue_address_1'],
+                    "event_venue_address_2" => $event['event_venue_address_2'],
+                    "city" => !empty($city->name) ? $city->name : "Others",
+                    "state" => !empty($state->name) ? $state->name : "Others",
+                    "country" => Country::where('id', $event['country'])->first()->name,
+                    "pincode" => $event['pincode'],
+                    "created_at" => $event['created_at'],
+                    "updated_at" => $event['updated_at'],
+                    "status" => $event['status'],
+                    "end_minute_time" => $event['end_minute_time'],
+                    "start_minute_time" => $event['start_minute_time'],
+                    "qr_code" => $event['qr_code'],
+                    "start_time_format" => $event['start_time_format'],
+                    "feedback" => $event['feedback'],
+                    "event_start_date" => $event['event_start_date'],
+                    "event_end_date" =>  $event['event_end_date'],
+                    "why_attend_info" =>  $event['why_attend_info'],
+                    "more_information" => $event['more_information'],
+                    "t_and_conditions" => $event['t_and_conditions'],
+                    "user_invitation_request" => $user_invitation_request
+                );
+
+                $event_data[] = array_merge($eventDetails, $event_data1);
+                unset($eventDetails);
+            }
+
+
+            if ($events) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'All Events',
+                    'data' => $event_data
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Event not Found',
+                    'data' => []
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Email Required',
+                'data' => []
+            ]);
+        }
+    }
+
+
     public function all_events()
     {
         $events = Event::all()->toArray();
@@ -181,7 +292,7 @@ class EventController extends Controller
         $event_data = [];
 
         $total_attendee = $total_accepted = $total_rejected = $total_not_accepted = 0;
-        
+
         foreach ($events as $event) {
 
             $total_attendee = Attendee::where('event_id', $event['id'])->count();
@@ -357,8 +468,8 @@ class EventController extends Controller
         if (!empty($email) || !empty($phone_number) || !empty($event_id)) {
 
             $invitations = DB::table('attendees')
-                ->where('attendees.email_id', $email)
-                ->orWhere('attendees.phone_number', $phone_number)
+                ->where('email_id', $email)
+                ->orWhere('phone_number', $phone_number)
                 ->where('event_invitation', 0)
                 ->first();
 
@@ -406,6 +517,7 @@ class EventController extends Controller
                 $attendee->industry = strip_tags($request->industry);
                 $attendee->email_id = strtolower(strip_tags($request->email_id));
                 $attendee->phone_number = empty($request->phone_number) ? '' : $request->phone_number;
+
                 $attendee->alternate_mobile_number = '';
                 $attendee->website = '';
                 $attendee->linkedin_page_link = '';
@@ -433,6 +545,101 @@ class EventController extends Controller
         }
     }
 
+    //On Event Details page - Attendee details 
+    public function event_details_attendee_list(Request $request)
+    {
+        $email = $request->input('email');
+        $phone_number = $request->input('phone_number');
+        $event_uuid = $request->input('event_uuid');
+
+        if (!empty($email) || !empty($phone_number)) {
+
+            $event = DB::table('events')
+                ->where('uuid', $event_uuid)
+                ->first();
+
+            if (!empty($event)) {
+
+                $data = [];
+
+                $invitations = DB::table('attendees')
+                ->where('event_id', $event->id)
+                ->orWhere('phone_number', $phone_number)
+                ->orWhere('attendees.email_id', $email)
+                    ->first();
+
+                if (!empty($invitations)) {
+                    $user_invitation_request = $invitations->user_invitation_request;
+                } else {
+                    $user_invitation_request = 0;
+                }
+
+                $eventDetails = [];
+
+                $city = City::where('id', $event->city)->first();
+
+                $state = State::where('id', $event->state)->first();
+
+                $eventDetails = array(
+                    "id" => $event->id,
+                    "uuid" => $event->uuid,
+                    "user_id" => $event->user_id,
+                    "title" => $event->title,
+                    "description" => $event->description,
+                    "event_date" => $event->event_date,
+                    "location" => !empty($city->name) ? $city->name : "Others",
+                    "start_time" => $event->start_time,
+                    "start_time_type" => $event->start_time_type,
+                    "end_time" => $event->end_time,
+                    "end_time_type" => $event->end_time_type,
+                    "image" => $event->image,
+                    "event_venue_name" => $event->event_venue_name,
+                    "event_venue_address_1" => $event->event_venue_address_1,
+                    "event_venue_address_2" => $event->event_venue_address_2,
+                    "city" => !empty($city->name) ? $city->name : "Others",
+                    "state" => !empty($state->name) ? $state->name : "Others",
+                    "country" => Country::where('id', $event->country)->first()->name,
+                    "pincode" => $event->pincode,
+                    "created_at" => $event->created_at,
+                    "updated_at" => $event->updated_at,
+                    "status" => $event->status,
+                    "end_minute_time" => $event->end_minute_time,
+                    "start_minute_time" => $event->start_minute_time,
+                    "qr_code" => $event->qr_code,
+                    "start_time_format" => $event->start_time_format,
+                    "feedback" => $event->feedback,
+                    "event_start_date" => $event->event_start_date,
+                    "event_end_date" =>  $event->event_end_date,
+                    "why_attend_info" =>  $event->why_attend_info,
+                    "more_information" => $event->more_information,
+                    "t_and_conditions" => $event->t_and_conditions,
+                    "user_invitation_request" => $user_invitation_request,
+                    "attendee_details" => $invitations
+                );
+
+                $invitationArray = [];
+
+                $invitationArray = json_decode(json_encode($invitations), true);
+                $event_data = json_decode(json_encode($eventDetails), true);
+
+                $data = array_merge($event_data, $invitationArray);
+
+                if (count($data) > 0) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Attendee Details for Event',
+                        'data' => $data
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Events Invitation not Found.Please contact to Organizer.',
+                    ]);
+                }
+            }
+        }
+    }
+
     // Event Invitation List for Attendee -- Mobile App
     public function event_invitation_list(Request $request)
     {
@@ -442,7 +649,6 @@ class EventController extends Controller
         if (!empty($email) || !empty($phone_number)) {
 
             $invitations = DB::table('attendees')
-                // ->join('events', 'attendees.event_id', '=', 'events.id')
                 ->where('attendees.email_id', $email)
                 ->orWhere('attendees.phone_number', $phone_number)
                 ->where('event_invitation', 1)
@@ -454,7 +660,6 @@ class EventController extends Controller
 
                 $event_details = DB::table('events')
                     ->where('id', $invitation->event_id)
-                    //Add condition if event Cancelled
                     ->get();
 
                 if ($event_details) {
@@ -473,6 +678,11 @@ class EventController extends Controller
                     'status' => 200,
                     'message' => 'Event Invitation List',
                     'data' => $data
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Events Invitation not Found.Please contact to Organizer.',
                 ]);
             }
         } else {
@@ -603,8 +813,17 @@ class EventController extends Controller
         if ($success) {
 
             // Generate QR code for the event
-            $eventUrl = route('events.show', ['uuid' => $event->uuid]);
+            // $eventUrl = route('events.show', ['uuid' => $event->uuid]);
+            // $qrCodePath = public_path('uploads/qrcodes/' . $event->uuid . '.png');
+            // QrCode::format('png')->size(200)->generate($eventUrl, $qrCodePath);
+
+
+            $uuidValue = $event->uuid;
+
+            $eventUrl = "https://kloutclub.page.link/?link=https://www.klout.club?eventuuid=" . $uuidValue . "&apn=com.klout.app&isi=6475306206&ibi=com.klout.app";
+
             $qrCodePath = public_path('uploads/qrcodes/' . $event->uuid . '.png');
+
             QrCode::format('png')->size(200)->generate($eventUrl, $qrCodePath);
 
             //Update the event record with the QR code path

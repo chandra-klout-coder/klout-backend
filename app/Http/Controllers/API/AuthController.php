@@ -47,6 +47,53 @@ class AuthController extends Controller
         $this->smsService = $smsService;
     }
 
+
+    //Send SMS
+    public function send_sms()
+    {
+
+        // Account details
+        $apiKey = urlencode('NWE1MTZmMzY2Nzc5NTc1ODRjNDQ3NjU5NmE1YTczNTY=');
+
+        // Message details
+        $numbers = array(918709289369, 919810699887);
+        $sender = urlencode('INSKLT');
+
+        $otp = 123456;
+
+        $content = "Dear User,
+
+ " . $otp . " is your OTP for verifying you profile with KloutClub by Insightner is valid for 30 minutes. 
+Please do not share OTP.
+
+Regards,
+KloutClub by Insightner Marketing";
+
+        $message = rawurlencode($content);
+
+        $numbers = implode(',', $numbers);
+
+        // Prepare data for POST request
+        $data = array('apikey' => $apiKey, 'numbers' => $numbers, "sender" => $sender, "message" => $message);
+
+        // Send the POST request with cURL
+
+        $ch = curl_init('https://api.textlocal.in/send/');
+
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($ch);
+
+        curl_close($ch);
+
+        // Process your response here
+        echo $response;
+    }
+
+
+
     //Check Authentication
     public function checkingAuthenticated()
     {
@@ -88,7 +135,7 @@ class AuthController extends Controller
     //Countries List
     public function countries()
     {
-        $countries = Country::all();
+        $countries = Country::orderBy('name', 'asc')->get();
 
         if ($countries) {
             return response()->json([
@@ -107,7 +154,7 @@ class AuthController extends Controller
     //States List
     public function states()
     {
-        $states = State::all();
+        $states = State::orderBy('name', 'asc')->get();
 
         if ($states) {
             return response()->json([
@@ -130,7 +177,7 @@ class AuthController extends Controller
 
         if ($country_id) {
 
-            $states = State::where('country_id', $country_id)->get();
+            $states = State::where('country_id', $country_id)->orderBy('name', 'asc')->get();
 
             if (count($states) > 0) {
 
@@ -174,7 +221,7 @@ class AuthController extends Controller
 
         if ($state_id) {
 
-            $cities = City::where('state_id', $state_id)->get();
+            $cities = City::where('state_id', $state_id)->orderBy('name', 'asc')->get();
 
             if (count($cities) > 0) {
 
@@ -183,7 +230,6 @@ class AuthController extends Controller
                     'message' => 'All Cities List for State',
                     'data' => $cities
                 ]);
-                
             } else {
 
                 $data = [["id" => 0, "name" => "Others"]];
@@ -205,7 +251,7 @@ class AuthController extends Controller
     //Cities List
     public function cities()
     {
-        $cities = City::all();
+        $cities = City::orderBy('name', 'asc')->get();
 
         if ($cities) {
             return response()->json([
@@ -222,8 +268,7 @@ class AuthController extends Controller
     }
 
 
-
-    public function employeeSize()
+    public function employee_size()
     {
         $employees = EmployeeSize::all();
 
@@ -244,7 +289,7 @@ class AuthController extends Controller
 
     public function get_job_titles()
     {
-        $JobTitleData = JobTitle::all();
+        $JobTitleData = JobTitle::orderBy('name', 'asc')->get();
 
         if ($JobTitleData) {
             return response()->json([
@@ -262,7 +307,7 @@ class AuthController extends Controller
 
     public function get_companies()
     {
-        $CompanyData = Company::all();
+        $CompanyData = Company::orderBy('name', 'asc')->get();
 
         if ($CompanyData) {
             return response()->json([
@@ -699,6 +744,16 @@ class AuthController extends Controller
             ]);
         }
     }
+
+    public function deleteAccountNow()
+    {
+        return response()->json([
+            'status' => 200,
+            'message' => 'Account Deleted Successfully'
+        ]);
+    }
+
+
 
     public function test()
     {
