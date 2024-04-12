@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Models\City;
+use App\Models\EventDesignation;
+use App\Models\EventIndustry;
 use App\Models\State;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Auth;
@@ -563,9 +565,9 @@ class EventController extends Controller
                 $data = [];
 
                 $invitations = DB::table('attendees')
-                ->where('event_id', $event->id)
-                ->orWhere('phone_number', $phone_number)
-                ->orWhere('attendees.email_id', $email)
+                    ->where('event_id', $event->id)
+                    ->orWhere('phone_number', $phone_number)
+                    ->orWhere('attendees.email_id', $email)
                     ->first();
 
                 if (!empty($invitations)) {
@@ -712,6 +714,71 @@ class EventController extends Controller
         }
     }
 
+    //Recommed Events based on industry, designation , skills
+    public function recommendEvents(Request $request)
+    {
+        $userId = $request->input('user_id');
+
+        // $user = User::where('id', $userId)->get();
+
+        // Get user's designation and industry
+        $designationId = $request->input('industry_id');
+        $industryId = $request->input('designation_id');
+
+        $events = [];
+
+        if (!empty($userId)) {
+
+            $mergedEvents = [];
+
+            $eventsIndustryData = EventIndustry::where('industry_id', $industryId)->get();
+
+            $eventsJobTitleData = EventDesignation::where('designation_id', $designationId)->get();
+
+            if (isset($eventsIndustryData) && !empty($eventsIndustryData)) {
+
+                foreach ($eventsIndustryData as $eventIndustry) {
+                    $eventId = $eventIndustry['event_id'];
+                    $mergedEvents[$eventId]['industry_id'] = $eventIndustry['industry_id'];
+                }
+            }
+
+            if (isset($eventsJobTitleData) && !empty($eventsJobTitleData)) {
+
+                foreach ($eventsJobTitleData as $eventDesignation) {
+                    $eventId = $eventDesignation['event_id'];
+                    $mergedEvents[$eventId]['designation_id'] = $eventDesignation['designation_id'];
+                }
+            }
+
+            if (isset($mergedEvents) && !empty($mergedEvents)) {
+
+                $i = 0;
+
+                foreach ($mergedEvents as $eventId => $eventData) {
+
+                    $event = Event::where('id', $eventId)->first();
+                    $events[$i] = $event;
+                    $i++;
+                }
+            }
+        }
+
+        // Return recommended events
+        if (!empty($events)) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Recommended Events',
+                'data' => $events
+            ]);
+        } else {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Recommended Events not Found.',
+            ]);
+        }
+    }
+
     //Add 0 in single Digit
     public function prepandZerorIfSingleDigit($number)
     {
@@ -811,6 +878,26 @@ class EventController extends Controller
         $success = $event->save();
 
         if ($success) {
+
+            // EventDesignation
+            if (isset($request->designation) && !empty($request->designation)) {
+                foreach ($request->designation as $row) {
+                    EventDesignation::create([
+                        'event_id' => $event->id,
+                        'designation_id' => $row
+                    ]);
+                }
+            }
+
+            // EventIndustry
+            if (isset($request->industry) && !empty($request->industry)) {
+                foreach ($request->industry as $row) {
+                    EventIndustry::create([
+                        'event_id' => $event->id,
+                        'industry_id' => $row
+                    ]);
+                }
+            }
 
             // Generate QR code for the event
             // $eventUrl = route('events.show', ['uuid' => $event->uuid]);
@@ -1057,6 +1144,36 @@ class EventController extends Controller
                 $success = $event->update();
 
                 if ($success) {
+
+                    if ($event->id) {
+
+                        $deleteIndustry = EventIndustry::where('event_id', $event->id)->delete();
+
+                        $deleteDesignation = EventDesignation::where('event_id', $event->id)->delete();
+
+                        if ($deleteIndustry && $deleteDesignation) {
+                            // EventDesignation
+                            if (isset($request->designation) && !empty($request->designation)) {
+                                foreach ($request->designation as $row) {
+                                    EventDesignation::create([
+                                        'event_id' => $event->id,
+                                        'designation_id' => $row
+                                    ]);
+                                }
+                            }
+
+                            // EventIndustry
+                            if (isset($request->industry) && !empty($request->industry)) {
+                                foreach ($request->industry as $row) {
+                                    EventIndustry::create([
+                                        'event_id' => $event->id,
+                                        'industry_id' => $row
+                                    ]);
+                                }
+                            }
+                        }
+                    }
+
 
                     return response()->json([
                         'status' => 200,

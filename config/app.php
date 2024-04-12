@@ -18,8 +18,10 @@ return [
     'twilio_sid' => env('TWILIO_SID'),
     'twilio_auth_token' =>env('TWILIO_AUTH_TOKEN'),
     'twilio_phone_number' =>env('TWILIO_PHONE_NUMBER'),
-    
     'front_end_url' =>env('FRONT_END_URL'),
+    'textlocal_api_key' => env('TEXTLOCAL_API_KEY'),
+    'textlocal_sender' => env('TEXTLOCAL_SENDER'),
+    
     /*
     |--------------------------------------------------------------------------
     | Application Environment
