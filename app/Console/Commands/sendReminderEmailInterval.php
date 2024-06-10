@@ -43,10 +43,12 @@ class sendReminderEmailInterval extends Command
     public function handle()
     {
         $notify = new NotificationController();
+        
         $response = $notify->sendMailReminderRegularInterval();
 
          // You can check the response and handle any errors or logging as needed
          if ($response) {
+            echo "Notification sent.";
             Log::info('Email Notification for Regular Interval Trigger : ',  now());
         }
     }

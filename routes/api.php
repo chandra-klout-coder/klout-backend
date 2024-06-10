@@ -280,3 +280,9 @@ Route::post('/assignedStatesData', [MappingModuleController::class, 'assignedSta
 Route::post('/assignedCountriesData', [MappingModuleController::class, 'assignedCountriesData']);
 Route::post('/assignedIndustriesData', [MappingModuleController::class, 'assignedIndustriesData']);
 Route::post('/assignedJobTitlesData', [MappingModuleController::class, 'assignedJobTitlesData']);
+
+Route::get('/timezone', [NotificationController::class, 'timezone']);
+
+Route::post('/send-webex-message', [NotificationController::class, 'sendInterkartMsg']);
+
+

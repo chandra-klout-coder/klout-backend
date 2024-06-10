@@ -11,7 +11,7 @@
         "doctrine/dbal": "^3.6",
         "dompdf/dompdf": "^2.0",
         "fruitcake/laravel-cors": "^3.0",
-        "guzzlehttp/guzzle": "^7.0.1",
+        "guzzlehttp/guzzle": "^7.7",
         "hashids/hashids": "^5.0",
         "intervention/image": "^2.7",
         "laravel/framework": "^8.75",

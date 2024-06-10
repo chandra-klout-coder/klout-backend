@@ -22,16 +22,16 @@ class Kernel extends ConsoleKernel
         })->everyMinute();
 
         //remainder of Event to attendee 1 hour before 
-        $schedule->command('auto:sendReminderOneHourBeforeStartTime')->everyMinute();
+        // $schedule->command('auto:sendReminderOneHourBeforeStartTime')->everyMinute();
 
         //remainder of Event on the same Date
-        $schedule->command('auto:sendReminderOnStartDate')->dailyAt('15:15');
+        // $schedule->command('auto:sendReminderOnStartDate')->dailyAt('15:15');
 
         //remainder of Event to attendee at custom Time Interval by Email
         $schedule->command('auto:sendReminderEmailInterval')->everyMinute();
 
         //remainder of Event to attendee at custom Time Interval by SMS
-        $schedule->command('auto:sendReminderSmsInterval')->everyMinute();
+        // $schedule->command('auto:sendReminderSmsInterval')->everyMinute();
 
         // $schedule->call('App\Http\Controllers\EventController@sendReminderOnStartDate')
         //     ->dailyAt('9:00'); // Adjust the time according to when you want to send reminders on the event start date

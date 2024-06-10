@@ -24,6 +24,9 @@ class Notification extends Model
         'end_date_type',
         'no_of_times',
         'hour_interval',
+        'delivery_schedule',
+        'next_notify_date_time',
+        'next_notify_date_type',
         'status'
     ];
 
